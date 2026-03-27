@@ -1,12 +1,4 @@
-import {
-  cpSync,
-  existsSync,
-  mkdtempSync,
-  readFileSync,
-  renameSync,
-  rmSync,
-  writeFileSync
-} from "node:fs";
+import { cpSync, existsSync, mkdtempSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
@@ -35,11 +27,7 @@ function runCommand(command, args, options = {}) {
   }
 }
 
-function readProxyTarget() {
-  const config = readFileSync(workerConfigPath, "utf8");
-  const match = config.match(/^\s*API_PROXY_TARGET\s*=\s*"([^"]+)"/m);
-  return match?.[1]?.trim() || "";
-}
+const proxyTarget = "https://smart-labeling-assistant-api.lostinsf.workers.dev";
 
 function createPagesWorker(proxyTarget) {
   return `export default {
@@ -59,7 +47,6 @@ function createPagesWorker(proxyTarget) {
 }
 
 const hasWorkerConfig = existsSync(workerConfigPath);
-const proxyTarget = readProxyTarget();
 const tempDeployDir = mkdtempSync(join(tmpdir(), "smart-labeling-pages-"));
 
 try {
