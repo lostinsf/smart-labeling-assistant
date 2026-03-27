@@ -1,0 +1,10 @@
+name = "smart-labeling-assistant-api"
+main = "workers/index.ts"
+compatibility_date = "2025-03-01"
+
+[vars]
+AI_MODE = "auto"
+OPENAI_MODEL = "gpt-4.1-mini"
+
+[observability.logs]
+enabled = true

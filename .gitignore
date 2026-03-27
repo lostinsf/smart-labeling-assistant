@@ -1,0 +1,24 @@
+# dependencies
+node_modules/
+
+# build outputs
+dist/
+.wrangler/
+
+# local env and secrets
+.dev.vars
+.rule
+AI_HANDOFF.md
+
+# TypeScript cache
+*.tsbuildinfo
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS/editor
+.DS_Store
+Thumbs.db
