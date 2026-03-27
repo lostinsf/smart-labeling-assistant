@@ -1,4 +1,14 @@
-import { existsSync, readFileSync, renameSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync
+} from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { spawnSync } from "node:child_process";
 
 const workerConfigPath = "wrangler.toml";
@@ -25,22 +35,38 @@ function runCommand(command, args, options = {}) {
   }
 }
 
-function readPublicApiBaseUrl() {
+function readProxyTarget() {
   const config = readFileSync(workerConfigPath, "utf8");
-  const match = config.match(/^\s*VITE_API_BASE_URL\s*=\s*"([^"]+)"/m);
+  const match = config.match(/^\s*API_PROXY_TARGET\s*=\s*"([^"]+)"/m);
   return match?.[1]?.trim() || "";
 }
 
+function createPagesWorker(proxyTarget) {
+  return `export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/api/")) {
+      const proxyUrl = new URL(url.pathname + url.search, ${JSON.stringify(proxyTarget)});
+      const proxiedRequest = new Request(proxyUrl.toString(), request);
+      return fetch(proxiedRequest);
+    }
+
+    return env.ASSETS.fetch(request);
+  }
+};
+`;
+}
+
 const hasWorkerConfig = existsSync(workerConfigPath);
-const viteApiBaseUrl = readPublicApiBaseUrl();
+const proxyTarget = readProxyTarget();
+const tempDeployDir = mkdtempSync(join(tmpdir(), "smart-labeling-pages-"));
 
 try {
-  runCommand("npm", ["run", "build"], {
-    env: {
-      ...process.env,
-      ...(viteApiBaseUrl ? { VITE_API_BASE_URL: viteApiBaseUrl } : {})
-    }
-  });
+  runCommand("npm", ["run", "build"]);
+
+  cpSync("dist", tempDeployDir, { recursive: true });
+  writeFileSync(join(tempDeployDir, "_worker.js"), createPagesWorker(proxyTarget), "utf8");
 
   if (hasWorkerConfig) {
     renameSync(workerConfigPath, tempConfigPath);
@@ -50,7 +76,7 @@ try {
     "wrangler",
     "pages",
     "deploy",
-    "dist",
+    tempDeployDir,
     "--project-name",
     "smart-labeling-assistant",
     "--commit-dirty=true"
@@ -59,4 +85,6 @@ try {
   if (existsSync(tempConfigPath)) {
     renameSync(tempConfigPath, workerConfigPath);
   }
+
+  rmSync(tempDeployDir, { recursive: true, force: true });
 }
