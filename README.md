@@ -1,4 +1,4 @@
-# AI 쇼핑 데이터 라벨링 보조 시스템
+# 라벨링 보조 시스템
 
 AI 추천과 사용자 검증을 한 화면에서 연결해 라벨링 생산성과 정확도를 함께 높이는 웹 도구입니다. 핵심은 추천 자체보다 추천값과 사용자 선택값의 차이를 빠르게 드러내는 품질 보조 흐름에 있습니다.
 
@@ -14,6 +14,7 @@ AI 추천과 사용자 검증을 한 화면에서 연결해 라벨링 생산성�
   - 샘플 파일 다운로드
   - 추천 일괄 실행
   - 검증 일괄 실행
+  - 품질 추적 일괄 등록
   - 검색, 상태 필터, 페이지 크기 변경, 페이지네이션
   - 행 클릭 시 Step 1~4 전체 동기화
 - 품질 추적
@@ -21,7 +22,7 @@ AI 추천과 사용자 검증을 한 화면에서 연결해 라벨링 생산성�
   - 최근 검증 이력
   - 불일치 중심 추적
   - CSV 리포트 다운로드
-  - 품질 추적 일괄 등록
+  - 저장 대기 레코드 관리
 - AI 추천 엔진
   - 룰 기반 추천
   - OpenAI 연동 시 LLM 추천 우선
@@ -196,6 +197,27 @@ npm run build
 npm run pages:deploy
 ```
 
+### Pages 환경 변수 설정
+
+배포된 Pages가 Worker API를 직접 호출하도록 아래 환경 변수를 반드시 설정합니다.
+
+```text
+VITE_API_BASE_URL=https://smart-labeling-assistant-api.lostinsf.workers.dev
+```
+
+설정 위치:
+
+1. Cloudflare Dashboard
+2. `Workers & Pages`
+3. `smart-labeling-assistant`
+4. `Settings`
+5. `Variables and Secrets`
+6. `Environment Variables`
+
+추가 후에는 Pages를 다시 배포해야 반영됩니다.
+
+이 설정이 없으면 Pages는 `/api/*`를 자기 도메인으로 호출하게 되고, `Mode / OpenAI` 상태가 꺼진 것처럼 보일 수 있습니다.
+
 ### 한 번에 배포
 
 ```bash
@@ -209,6 +231,7 @@ npm run cf:deploy
 - `.dev.vars`가 커밋 대상에 포함되지 않았는지 확인
 - `node_modules`, `dist`, `.wrangler`가 커밋 대상에 포함되지 않았는지 확인
 - Cloudflare Secret과 Variables가 배포 환경에 설정되어 있는지 확인
+- Pages에 `VITE_API_BASE_URL`이 설정되어 있는지 확인
 
 ## 샘플 테스트 데이터
 
