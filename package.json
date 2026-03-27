@@ -11,7 +11,7 @@
     "worker:dev": "wrangler dev workers/index.ts --port 8787",
     "worker:dev:remote": "wrangler dev workers/index.ts --port 8787 --remote",
     "worker:deploy": "wrangler deploy",
-    "pages:deploy": "wrangler pages deploy dist",
+    "pages:deploy": "node scripts/deploy-pages.mjs",
     "cf:build": "npm run build",
     "cf:deploy": "npm run worker:deploy && npm run pages:deploy"
   },
